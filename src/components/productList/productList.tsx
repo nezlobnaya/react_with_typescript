@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { FunctionComponent, useState } from "react";
 import { Header } from "../header/header";
 import { ProductItem } from "../productItem/productItem";
 import { CategoryList} from "../categoryList/categoryList";
@@ -11,47 +11,36 @@ interface Props {
     addToOrder: (product: Product, quantity: number) => void
 }
 
-interface State {
-    selectedCategory: string;
-}
+export const ProductList: FunctionComponent<Props> = (props) => {
 
-export class ProductList extends Component<Props, State> {
+    const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-    constructor(props: Props) {
-        super(props);
-        this.state = {
-            selectedCategory: "All"
-        }
+    const selectCategory = (category: string) => {
+        setSelectedCategory(category);
     }
 
-    render() {
-        return <div>
-            <Header order={ this.props.order } />
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-3 p-2">
-                        <CategoryList categories={ this.props.categories } 
-                            selected={ this.state.selectedCategory }
-                            selectCategory={ this.selectCategory } />
-                    </div>
-                    <div className="col-9 p-2">
-                        {
-                            this.products.map(p => 
-                                <ProductItem key={ p.id } product={ p } 
-                                    callback={ this.props.addToOrder } />)
-                        }
-                    </div>
+
+    const productList = props.products
+        .filter(p => selectedCategory === "All" || p.category === selectedCategory)
+        .map(p => <ProductItem key={ p.id }
+            product={ p }
+            callback={ props.addToOrder } />);
+
+    return <div>
+        <Header order={ props.order } />
+        <div className="container-fluid">
+            <div className="row">
+                <div className="col-3 p-2">
+                    <CategoryList categories={ props.categories }
+                        selected={ selectedCategory }
+                        selectCategory={ selectCategory } />
+                </div>
+                <div className="col-9 p-2">
+                    { productList }
                 </div>
             </div>
         </div>
-    }
-
-    get products(): Product[] {
-        return this.props.products.filter(p => this.state.selectedCategory === "All" 
-            || p.category === this.state.selectedCategory);
-    }
-
-    selectCategory = (cat: string) => {
-        this.setState({ selectedCategory: cat});
-    }
+    </div>
 }
+
+    
